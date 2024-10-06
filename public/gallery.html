@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Gallery</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .gallery-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .showtype-frame {
+      border: 2px solid #fff;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    .showtype-title {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    .image-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .image-container {
+      flex: 1 1 calc(20% - 10px);
+      max-width: calc(20% - 10px);
+      box-sizing: border-box;
+    }
+    .image-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-width: 800px; /* Set max width for images */
+    }
+    .metadata {
+      font-size: 0.8em;
+      margin-top: 5px;
+      text-align: center;
+      display: none; /* Initially hidden */
+    }
+    @media (max-width: 768px) {
+      .image-container {
+        flex: 1 1 calc(50% - 10px);
+        max-width: calc(50% - 10px);
+      }
+    }
+    @media (max-width: 480px) {
+      .image-container {
+        flex: 1 1 100%;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+    <a href="/">Run another Job</a>
+  <h1>Job Gallery</h1>
+  <label>
+    <input type="checkbox" id="toggleMetadata"> Show Metadata
+  </label>
+  <div class="gallery-container" id="galleryContainer"></div>
+
+  <script>
+    async function loadGallery() {
+      const response = await fetch('/metadata.json');
+      const metadata = await response.json();
+
+      const galleryContainer = document.getElementById('galleryContainer');
+      const groupedByShowType = metadata.reduce((acc, item) => {
+        if (!acc[item.showType]) acc[item.showType] = [];
+        acc[item.showType].push(item);
+        return acc;
+      }, {});
+
+      for (const [showType, items] of Object.entries(groupedByShowType)) {
+        const frame = document.createElement('div');
+        frame.classList.add('showtype-frame');
+
+        const title = document.createElement('div');
+        title.classList.add('showtype-title');
+        title.textContent = showType;
+        frame.appendChild(title);
+
+        const imageRow = document.createElement('div');
+        imageRow.classList.add('image-row');
+
+        items.forEach(item => {
+          const imageContainer = document.createElement('div');
+          imageContainer.classList.add('image-container');
+
+          const imgElement = document.createElement('img');
+          imgElement.src = `images/${item.filename}`;
+          imageContainer.appendChild(imgElement);
+
+          const metadataDiv = document.createElement('div');
+          metadataDiv.classList.add('metadata');
+          metadataDiv.innerHTML = `
+            <div class="prompt">Prompt: ${item.prompt}</div>
+            <div class="seed">Seed: ${item.seed}</div>
+          `;
+          imageContainer.appendChild(metadataDiv);
+
+          imageRow.appendChild(imageContainer);
+        });
+
+        frame.appendChild(imageRow);
+        galleryContainer.appendChild(frame);
+      }
+    }
+
+    function toggleMetadata() {
+      const metadataElements = document.querySelectorAll('.metadata');
+      const isChecked = document.getElementById('toggleMetadata').checked;
+      metadataElements.forEach(element => {
+        element.style.display = isChecked ? 'block' : 'none';
+      });
+    }
+
+    document.getElementById('toggleMetadata').addEventListener('change', toggleMetadata);
+
+    loadGallery();
+  </script>
+</body>
+</html>

@@ -16,14 +16,18 @@ async function checkAndSaveJobs(jobIds, updateProgress) {
 
             if (status === 'completed') {
               const images = data.result.images;
-              await saveImages(job.taskId, images);
+              const infoString = data.result.info;
+              let seed = null;
 
-              // Use the prompt from the job object instead of the response
-              if (job.payload && job.payload.prompt) {
-                await savePrompt(job.taskId, job.payload.prompt);
-              } else {
-                console.warn(`No prompt found for job ${job.taskId}`);
+              // Parse the info string to extract the seed
+              try {
+                const info = JSON.parse(infoString);
+                seed = info.seed;
+              } catch (parseError) {
+                console.error(`Error parsing info for job ${job.taskId}:`, parseError);
               }
+
+              await saveImages(job.taskId, images, job.showType, job.payload.prompt, seed);
 
               updateProgress(job.taskId, 100);
               jobIds.splice(jobIds.indexOf(job), 1);
@@ -48,10 +52,24 @@ async function checkAndSaveJobs(jobIds, updateProgress) {
     }
   }
 
-  async function saveImages(taskId, images) {
+  async function saveImages(taskId, images, showType, prompt, seed) {
     const imagesDir = path.join(__dirname, 'public', 'images');
     if (!fs.existsSync(imagesDir)) {
       fs.mkdirSync(imagesDir, { recursive: true });
+    }
+
+    const metadataPath = path.join(__dirname, 'public', 'metadata.json');
+    let metadata = [];
+
+    // Load existing metadata if the file exists
+    if (fs.existsSync(metadataPath)) {
+      try {
+        const fileContent = fs.readFileSync(metadataPath, 'utf-8');
+        metadata = JSON.parse(fileContent);
+      } catch (error) {
+        console.error('Error reading metadata.json:', error);
+        metadata = [];
+      }
     }
 
     images.forEach((imgData, idx) => {
@@ -59,10 +77,23 @@ async function checkAndSaveJobs(jobIds, updateProgress) {
 
       // Convert base64 to buffer and save as image
       const imgBuffer = Buffer.from(imgData, 'base64');
-      const imgPath = path.join(imagesDir, `${taskId}_${idx}.png`);
+      const imgFilename = `${taskId}_${idx}.png`;
+      const imgPath = path.join(imagesDir, imgFilename);
       fs.writeFileSync(imgPath, imgBuffer);
+
+      // Add metadata for this image
+      metadata.push({
+        showType: showType || 'Unknown', // Default to 'Unknown' if undefined
+        prompt: prompt || 'No prompt available', // Default if undefined
+        seed: seed || 'No seed available', // Default if undefined
+        filename: imgFilename
+      });
     });
+
+    // Save updated metadata
+    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
   }
+
   async function savePrompt(taskId, prompt) {
     const promptsDir = path.join(__dirname, 'prompts');
     if (!fs.existsSync(promptsDir)) {
