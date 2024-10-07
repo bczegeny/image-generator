@@ -19,37 +19,64 @@ This project is a bulk image generation system designed to work with the [Stable
 
 ## Setup
 
-1. **Clone the Repository**
+1. **Install Node.js and npm (for macOS)**
+
+   If you don't have Node.js installed, you can install it using Homebrew:
+
+   ```bash
+   # Install Homebrew if you don't have it
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+   # Install Node.js
+   brew install node
+   ```
+
+   Verify the installation:
+
+   ```bash
+   node --version
+   npm --version
+   ```
+
+2. **Clone the Repository**
 
    ```bash
    git clone https://github.com/yourusername/bulk-image-gen.git
    cd bulk-image-gen
    ```
 
-2. **Install Dependencies**
+3. **Install Dependencies**
 
    ```bash
    npm install
    ```
 
-3. **Configure API Endpoints**
+4. **Configure API Endpoint**
 
-   Ensure the API endpoints in `processAllJobs.js` and `checkAndSaveJobs.js` are correctly set to your image generation API.
+   Create a `.env` file in the root directory of the project and add the following line, replacing `YOUR_API_URL` with the correct URL of your Stable Diffusion WebUI Forge instance:
 
-4. **Run the Server**
-
-   ```bash
-   node index.js
+   ```
+   API_BASE_URL=YOUR_API_URL
    ```
 
-   The server will start on `http://localhost:3000`.
+   For example:
+   ```
+   API_BASE_URL=http://localhost:7860
+   ```
+
+5. **Run the Server**
+
+   ```bash
+   npm start
+   ```
+
+   The server will start on `http://localhost:3000`, and your default browser should open automatically.
 
 ## Usage
 
 1. **Upload Job File**
 
-   - Navigate to `http://localhost:3000` in your web browser.
-   - Use the file upload form to upload a JSON file containing job details.
+   - Use the file upload form on the homepage to upload a JSON file containing job details.
 
 2. **Monitor Job Progress**
 
