@@ -6,7 +6,7 @@ const path = require('path');
 const API_STATUS_ENDPOINT = 'http://127.0.0.1:7860/sd-queue';
 
 async function checkAndSaveJobs(jobIds, updateProgress) {
-  let activeJobs = jobIds.slice(0, 30); // Start with the first 30 jobs
+  let activeJobs = jobIds.slice(0, 150); // Start with the first 30 jobs
   let completedJobsCount = 0;
 
   while (activeJobs.length > 0) {

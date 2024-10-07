@@ -2,3 +2,5 @@
 prompts/*
 /public/metadata.json
 /uploads/*
+/node_modules/*
+jobStatuses.json
