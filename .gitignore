@@ -4,3 +4,4 @@ prompts/*
 /uploads/*
 /node_modules/*
 jobStatuses.json
+.env
